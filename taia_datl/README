@@ -1,1 +1,96 @@
-# Summary of the relevant hyper parameters 
+# Selected Hyperparameters
+
+This document records the **final (best) hyperparameters** chosen per dataset and
+model after the 65/15/20 temporal-split grid search (grid search on the 15 %
+validation set. These are the values that should be used to retrain each model on the
+train+val split and report final results on the held-out 20 % test set.
+
+---
+
+
+### Hyperparameter glossary
+
+| Parameter | Applies to | Meaning |
+|-----------|-----------|---------|
+| **Batch_Size**      | all | Mini-batch size during training. |
+| **Learning_Rate**   | all | Optimiser learning rate. |
+| **Dropout**         | D-TAIA, Oyamada | Dropout rate in the encoder / hidden layers. |
+| **Hidden_Dim**      | MT-RNN | Recurrent hidden state size (per direction). |
+| **Num_Layers**      | MT-RNN | Number of stacked recurrent layers. |
+| **RT_Loss_Weight**  | D-TAIA, MT-RNN | Weight of the remaining-time MSE loss relative to the NA cross-entropy (α / `rt_weight` / `mt_weight`). |
+| **Triplet_Weight**  | D-TAIA | Weight λ of the domain-aware triplet loss. |
+| **Triplet_Margin**  | D-TAIA | Margin τ in the domain-aware triplet loss. |
+| **LoRA_Rank**       | FT-LLM | LoRA adapter rank `r`. |
+| **LoRA_Alpha**      | LoRA scaling factor α. |
+| **LoRA_Dropout**    | Dropout inside the LoRA adapters. |
+
+`N/A` = the parameter does not apply to that model on that dataset.
+
+---
+
+## DATL-TAIA (proposed model)
+
+| Dataset | Batch_Size | Learning_Rate | Dropout | RT_Loss_Weight | Triplet_Weight | Triplet_Margin | LoRA_Rank | LoRA_Alpha | LoRA_Dropout |
+|---------|-----------:|--------------:|--------:|---------------:|---------------:|---------------:|----------:|-----------:|-------------:|
+| BPI2012      | 128 | 1e-3 | 0.20 | 1.0 | 0.10 | 1.0 | N/A | N/A | N/A |
+| BPI2017      | 256 | 2e-3 | 0.15 | 1.0 | 0.05 | 1.0 | 16  | 32  | 0.10 |
+| BPI2015_1    | 32  | 5e-4 | 0.30 | 1.0 | 0.20 | 2.0 | 32  | 64  | 0.10 |
+| BPI2015_2    | 32  | 5e-4 | 0.30 | 1.0 | 0.20 | 2.0 | 8   | 16  | 0.15 |
+| BPI2015_3    | 32  | 5e-4 | 0.30 | 1.0 | 0.20 | 2.0 | 8   | 16  | 0.15 |
+| BPI2015_4    | 32  | 5e-4 | 0.30 | 1.0 | 0.20 | 2.0 | 8   | 16  | 0.15 |
+| BPI2015_5    | 32  | 5e-4 | 0.30 | 1.0 | 0.20 | 2.0 | 8   | 16  | 0.15 |
+| BPI2020_DD   | 64  | 5e-4 | 0.25 | 2.0 | 0.20 | 1.5 | 8   | 16  | 0.15 |
+| BPI2020_ID   | 64  | 5e-4 | 0.25 | 2.0 | 0.20 | 1.5 | 8   | 16  | 0.15 |
+| BPI2020_PTC  | 32  | 1e-4 | 0.30 | 2.0 | 0.20 | 1.5 | N/A | N/A | N/A |
+| BPI2020_RFP  | 32  | 1e-4 | 0.30 | 2.0 | 0.20 | 1.5 | 8   | 16  | 0.15 |
+
+---
+
+## MT-RNN baseline
+
+| Dataset | Batch_Size | Learning_Rate | Dropout | Hidden_Dim | Num_Layers | RT_Loss_Weight |
+|---------|-----------:|--------------:|--------:|-----------:|-----------:|---------------:|
+| BPI2012      | 128 | 1e-3 | 0.20 | 256 | 2 | 1.0 |
+| BPI2017      | 256 | 2e-3 | 0.15 | 512 | 3 | 1.0 |
+| BPI2015_1    | 32  | 5e-4 | 0.40 | 128 | 2 | 2.0 |
+| BPI2015_2    | 32  | 5e-4 | 0.40 | 128 | 2 | 2.0 |
+| BPI2015_3    | 32  | 5e-4 | 0.40 | 128 | 2 | 2.0 |
+| BPI2015_4    | 32  | 5e-4 | 0.40 | 128 | 2 | 2.0 |
+| BPI2015_5    | 32  | 5e-4 | 0.40 | 128 | 2 | 2.0 |
+| BPI2020_DD   | 64  | 5e-4 | 0.30 | 256 | 2 | 2.0 |
+| BPI2020_ID   | 64  | 5e-4 | 0.30 | 256 | 2 | 2.0 |
+| BPI2020_PTC  | 32  | 5e-4 | 0.30 | 256 | 2 | 2.0 |
+| BPI2020_RFP  | 32  | 5e-4 | 0.30 | 256 | 2 | 2.0 |
+
+
+---
+
+## (FT-LLM — LLM + LoRA)
+
+| Dataset | Batch_Size | Learning_Rate | Dropout | LoRA_Rank | LoRA_Alpha | LoRA_Dropout |
+|---------|-----------:|--------------:|--------:|----------:|-----------:|-------------:|
+| BPI2012      | 8  | 1e-4 | 0.10 | 16 | 32 | 0.10 |
+| BPI2017      | 16 | 1e-4 | 0.10 | 32 | 64 | 0.10 |
+| BPI2015_1    | 4  | 5e-5 | 0.15 | 8  | 16 | 0.15 |
+| BPI2015_2    | 4  | 5e-5 | 0.15 | 8  | 16 | 0.15 |
+| BPI2015_3    | 4  | 5e-5 | 0.15 | 8  | 16 | 0.15 |
+| BPI2015_4    | 4  | 5e-5 | 0.15 | 8  | 16 | 0.15 |
+| BPI2015_5    | 4  | 5e-5 | 0.15 | 8  | 16 | 0.15 |
+| BPI2020_DD   | 4  | 5e-5 | 0.10 | 8  | 16 | 0.10 |
+| BPI2020_ID   | 4  | 5e-5 | 0.10 | 8  | 16 | 0.10 |
+| BPI2020_PTC  | 4  | 5e-5 | 0.10 | 8  | 16 | 0.10 |
+| BPI2020_RFP  | 4  | 5e-5 | 0.10 | 8  | 16 | 0.10 |
+
+---
+
+## Datasets
+
+| Code | Dataset |
+|------|---------|
+| BPI2012      | BPI Challenge 2012 — loan application process. |
+| BPI2017      | BPI Challenge 2017 — loan application updated process |
+| BPI2015_1…5  | BPI Challenge 2015 — building-permit logs, five municipalities. |
+| BPI2020_DD   | BPI Challenge 2020 — Domestic Declarations. |
+| BPI2020_ID   | BPI Challenge 2020 — International Declarations. |
+| BPI2020_PTC  | BPI Challenge 2020 — Prepaid Travel Cost. |
+| BPI2020_RFP  | BPI Challenge 2020 — Request For Payment. |
